@@ -199,7 +199,7 @@
       opacity: 0.7;
     }
 
-    /* Tool rows (like horizontal carousels, but static) */
+    /* Tool rows */
 
     .tool-row {
       display: flex;
@@ -382,46 +382,7 @@
           </div>
         </div>
 
-        <div class="tool-row">
-          <a class="tool-card" href="tools/timesheet-calculator/index.html">
-            <div class="tool-avatar">⏱️</div>
-            <div class="tool-main">
-              <div class="tool-name">Timesheet Calculator</div>
-              <div class="tool-desc">Track work hours, calculate totals, and export your week in one place.</div>
-              <div class="tool-meta">Work • Time tracking</div>
-            </div>
-            <div class="tool-trailing">
-              <div class="tool-pill">Work</div>
-              <div class="tool-chevron">›</div>
-            </div>
-          </a>
-
-          <a class="tool-card" href="tools/money-calculator/index.html">
-            <div class="tool-avatar">💰</div>
-            <div class="tool-main">
-              <div class="tool-name">Money Calculator</div>
-              <div class="tool-desc">Count notes, coins, and rolls — totals update instantly as you type.</div>
-              <div class="tool-meta">Money • Cash counting</div>
-            </div>
-            <div class="tool-trailing">
-              <div class="tool-pill">Money</div>
-              <div class="tool-chevron">›</div>
-            </div>
-          </a>
-
-          <a class="tool-card" href="tools/word-reader/index.html">
-            <div class="tool-avatar">🔊</div>
-            <div class="tool-main">
-              <div class="tool-name">Word Reader</div>
-              <div class="tool-desc">Type a word and hear it spoken aloud with your chosen browser voice.</div>
-              <div class="tool-meta">Language • Pronunciation helper</div>
-            </div>
-            <div class="tool-trailing">
-              <div class="tool-pill">Language</div>
-              <div class="tool-chevron">›</div>
-            </div>
-          </a>
-        </div>
+        <div class="tool-row" id="section-popular"></div>
       </section>
 
       <!-- Work -->
@@ -437,32 +398,7 @@
           </div>
         </div>
 
-        <div class="tool-row">
-          <a class="tool-card" href="tools/timesheet-calculator/index.html">
-            <div class="tool-avatar">⏱️</div>
-            <div class="tool-main">
-              <div class="tool-name">Timesheet Calculator</div>
-              <div class="tool-desc">Add days, enter hours, and see your total time at a glance.</div>
-              <div class="tool-meta">Ready now</div>
-            </div>
-            <div class="tool-trailing">
-              <div class="tool-pill">Hours</div>
-              <div class="tool-chevron">›</div>
-            </div>
-          </a>
-
-          <div class="tool-card disabled">
-            <div class="tool-avatar">📋</div>
-            <div class="tool-main">
-              <div class="tool-name">Task Checklist</div>
-              <div class="tool-desc">Lightweight checklist for daily tasks and focus — coming soon.</div>
-              <div class="tool-meta">Planned</div>
-            </div>
-            <div class="tool-trailing">
-              <div class="tool-pill">Coming soon</div>
-            </div>
-          </div>
-        </div>
+        <div class="tool-row" id="section-work"></div>
       </section>
 
       <!-- Money -->
@@ -478,32 +414,7 @@
           </div>
         </div>
 
-        <div class="tool-row">
-          <a class="tool-card" href="tools/money-calculator/index.html">
-            <div class="tool-avatar">💰</div>
-            <div class="tool-main">
-              <div class="tool-name">Money Calculator</div>
-              <div class="tool-desc">Perfect for cash drawers, tips, or quick deposits.</div>
-              <div class="tool-meta">Ready now</div>
-            </div>
-            <div class="tool-trailing">
-              <div class="tool-pill">Cash</div>
-              <div class="tool-chevron">›</div>
-            </div>
-          </a>
-
-          <div class="tool-card disabled">
-            <div class="tool-avatar">🧮</div>
-            <div class="tool-main">
-              <div class="tool-name">Tip & Split</div>
-              <div class="tool-desc">Calculate tips and split bills with friends — coming soon.</div>
-              <div class="tool-meta">Planned</div>
-            </div>
-            <div class="tool-trailing">
-              <div class="tool-pill">Coming soon</div>
-            </div>
-          </div>
-        </div>
+        <div class="tool-row" id="section-money"></div>
       </section>
 
       <!-- Language -->
@@ -519,32 +430,7 @@
           </div>
         </div>
 
-        <div class="tool-row">
-          <a class="tool-card" href="tools/word-reader/index.html">
-            <div class="tool-avatar">🔊</div>
-            <div class="tool-main">
-              <div class="tool-name">Word Reader</div>
-              <div class="tool-desc">Hear a word out loud while you’re reading or learning.</div>
-              <div class="tool-meta">Ready now</div>
-            </div>
-            <div class="tool-trailing">
-              <div class="tool-pill">Voice</div>
-              <div class="tool-chevron">›</div>
-            </div>
-          </a>
-
-          <div class="tool-card disabled">
-            <div class="tool-avatar">📚</div>
-            <div class="tool-main">
-              <div class="tool-name">Word Flashcards</div>
-              <div class="tool-desc">Simple word + meaning practice with audio — coming soon.</div>
-              <div class="tool-meta">Planned</div>
-            </div>
-            <div class="tool-trailing">
-              <div class="tool-pill">Coming soon</div>
-            </div>
-          </div>
-        </div>
+        <div class="tool-row" id="section-language"></div>
       </section>
 
     </section>
@@ -554,5 +440,90 @@
     <span>Built as a small collection of everyday tools.</span>
     <span>More tools coming over time.</span>
   </footer>
+
+  <!-- JSON‑driven cards -->
+  <script>
+    const SECTION_MAP = {
+      "Popular": "section-popular",
+      "Work": "section-work",
+      "Money": "section-money",
+      "Language": "section-language"
+    };
+
+    function createToolCard(item) {
+      const link = document.createElement(item.href && !item.disabled ? "a" : "div");
+      link.className = "tool-card" + (item.disabled ? " disabled" : "");
+      if (item.href && !item.disabled) {
+        link.href = item.href;
+      }
+
+      const avatar = document.createElement("div");
+      avatar.className = "tool-avatar";
+      avatar.textContent = item.emoji || "⚙️";
+
+      const main = document.createElement("div");
+      main.className = "tool-main";
+
+      const name = document.createElement("div");
+      name.className = "tool-name";
+      name.textContent = item.title;
+
+      const desc = document.createElement("div");
+      desc.className = "tool-desc";
+      desc.textContent = item.description;
+
+      const meta = document.createElement("div");
+      meta.className = "tool-meta";
+      meta.textContent = item.meta || item.category || "";
+
+      main.appendChild(name);
+      main.appendChild(desc);
+      main.appendChild(meta);
+
+      const trailing = document.createElement("div");
+      trailing.className = "tool-trailing";
+
+      const pill = document.createElement("div");
+      pill.className = "tool-pill";
+      pill.textContent = item.pill || item.category || "";
+
+      trailing.appendChild(pill);
+
+      if (!item.disabled && item.href) {
+        const chev = document.createElement("div");
+        chev.className = "tool-chevron";
+        chev.textContent = "›";
+        trailing.appendChild(chev);
+      }
+
+      link.appendChild(avatar);
+      link.appendChild(main);
+      link.appendChild(trailing);
+
+      return link;
+    }
+
+    async function initTools() {
+      try {
+        const res = await fetch("assets.json");
+        if (!res.ok) {
+          throw new Error("HTTP " + res.status);
+        }
+        const data = await res.json();
+
+        data.forEach(item => {
+          const sectionId = SECTION_MAP[item.section];
+          if (!sectionId) return;
+          const container = document.getElementById(sectionId);
+          if (!container) return;
+          container.appendChild(createToolCard(item));
+        });
+      } catch (err) {
+        console.error("Failed to load assets.json", err);
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", initTools);
+  </script>
 </body>
 </html>
