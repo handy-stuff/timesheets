@@ -17,13 +17,11 @@
       --border-hover: #c4cdd5;
       --text: #1c2127;
       --text-muted: #637381;
-      --text-faint: #919eab;
       --primary: #1a56db;
       --primary-hover: #1749b8;
       --primary-light: #eef2ff;
       --radius: 12px;
       --shadow: 0 1px 3px rgba(0,0,0,0.06);
-      --shadow-hover: 0 6px 20px rgba(0,0,0,0.08);
       --transition: 200ms ease;
       --font: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
@@ -44,9 +42,7 @@
       padding: 48px 20px 40px;
     }
 
-    .page-header {
-      margin-bottom: 28px;
-    }
+    .page-header { margin-bottom: 28px; }
 
     .back-link {
       display: inline-flex;
@@ -59,10 +55,7 @@
       margin-bottom: 18px;
       transition: color var(--transition);
     }
-
-    .back-link:hover {
-      color: var(--primary);
-    }
+    .back-link:hover { color: var(--primary); }
 
     .page-header h1 {
       font-size: 28px;
@@ -73,7 +66,6 @@
       align-items: center;
       gap: 12px;
     }
-
     .page-header p {
       font-size: 15px;
       color: var(--text-muted);
@@ -89,9 +81,7 @@
       padding: 24px;
     }
 
-    .field {
-      margin-bottom: 18px;
-    }
+    .field { margin-bottom: 18px; }
 
     .field label {
       display: block;
@@ -145,17 +135,13 @@
       background: var(--primary);
       color: #fff;
     }
-
-    .btn-primary:hover {
-      background: var(--primary-hover);
-    }
+    .btn-primary:hover { background: var(--primary-hover); }
 
     .btn-secondary {
       background: var(--surface);
       color: var(--text);
       border-color: var(--border);
     }
-
     .btn-secondary:hover {
       border-color: var(--border-hover);
       background: var(--surface-soft);
@@ -169,6 +155,7 @@
       color: var(--text);
       font-size: 14px;
       line-height: 1.5;
+      white-space: pre-line;
     }
 
     .hint {
@@ -177,12 +164,55 @@
       color: var(--text-muted);
     }
 
+    .favorite-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+      align-items: center;
+    }
+
+    .favorite-label {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .favorite-name-input {
+      flex: 1 1 160px;
+      min-width: 0;
+    }
+
+    .favorite-name-input.input {
+      min-height: 40px;
+      font-size: 14px;
+      padding-inline: 10px;
+    }
+
+    .favorite-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    .favorite-chip strong {
+      font-weight: 600;
+      color: var(--text);
+    }
+
     @media (max-width: 480px) {
       .container { padding: 32px 16px 32px; }
       .page-header h1 { font-size: 22px; }
       .page-header p { padding-left: 0; }
       .actions { flex-direction: column; }
       .btn { width: 100%; }
+      .favorite-row { flex-direction: column; align-items: stretch; }
     }
   </style>
 </head>
@@ -212,6 +242,24 @@
       <div class="field">
         <label for="voiceSelect">Voice</label>
         <select id="voiceSelect" class="select"></select>
+
+        <div class="favorite-row">
+          <span class="favorite-label">Save current voice as favorite label:</span>
+          <input
+            id="favoriteNameInput"
+            class="input favorite-name-input"
+            type="text"
+            placeholder="e.g. Google US English or Junior"
+          />
+          <button id="saveFavoriteBtn" class="btn btn-secondary" type="button">
+            Save favorite
+          </button>
+        </div>
+
+        <div id="favoriteInfo" class="favorite-chip" style="display:none;">
+          Favorite: <strong id="favoriteLabel"></strong>
+          <span id="favoriteDetails"></span>
+        </div>
       </div>
 
       <div class="actions">
@@ -222,7 +270,7 @@
 
       <div class="status" id="status">Ready. Type a word and press Speak.</div>
       <div class="hint">
-        If the voice list is empty at first, wait a moment. Some browsers load voices after the page opens.
+        Pick any voice you like from the list, optionally give it a label (like “Google US English”) and click “Save favorite”. This preference is stored in this browser only.
       </div>
     </section>
   </main>
@@ -236,15 +284,86 @@
     const stopBtn = document.getElementById('stopBtn');
     const status = document.getElementById('status');
 
+    const favoriteNameInput = document.getElementById('favoriteNameInput');
+    const saveFavoriteBtn = document.getElementById('saveFavoriteBtn');
+    const favoriteInfo = document.getElementById('favoriteInfo');
+    const favoriteLabelEl = document.getElementById('favoriteLabel');
+    const favoriteDetailsEl = document.getElementById('favoriteDetails');
+
+    const FAVORITE_KEY = 'word_reader_favorite_voice_v1';
+
     let voices = [];
     let lastWord = '';
+    let favoriteVoice = null; // { label, name, lang }
 
     function setStatus(message) {
       status.textContent = message;
     }
 
+    function loadFavorite() {
+      try {
+        const raw = localStorage.getItem(FAVORITE_KEY);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.name && parsed.lang && parsed.label) {
+          favoriteVoice = parsed;
+          favoriteInfo.style.display = 'inline-flex';
+          favoriteLabelEl.textContent = favoriteVoice.label;
+          favoriteDetailsEl.textContent = `(${favoriteVoice.name}, ${favoriteVoice.lang})`;
+        }
+      } catch (e) {
+        console.warn('Could not load favorite voice', e);
+      }
+    }
+
+    function saveFavorite(currentVoice) {
+      const label = (favoriteNameInput.value || '').trim() || currentVoice.name;
+      favoriteVoice = {
+        label,
+        name: currentVoice.name,
+        lang: currentVoice.lang
+      };
+      localStorage.setItem(FAVORITE_KEY, JSON.stringify(favoriteVoice));
+      favoriteInfo.style.display = 'inline-flex';
+      favoriteLabelEl.textContent = favoriteVoice.label;
+      favoriteDetailsEl.textContent = `(${favoriteVoice.name}, ${favoriteVoice.lang})`;
+      setStatus(`Saved favorite: ${favoriteVoice.label}\nVoice: ${favoriteVoice.name} (${favoriteVoice.lang})`);
+    }
+
+    function chooseAutoVoiceIndex(voices) {
+      const googleEnglish = voices.findIndex(v =>
+        v.name && v.name.toLowerCase().includes('google') &&
+        v.lang && v.lang.toLowerCase().startsWith('en')
+      );
+      if (googleEnglish >= 0) return googleEnglish;
+
+      const defaultVoice = voices.findIndex(v => v.default);
+      if (defaultVoice >= 0) return defaultVoice;
+
+      const enUsVoice = voices.findIndex(v =>
+        v.lang && v.lang.toLowerCase() === 'en-us'
+      );
+      if (enUsVoice >= 0) return enUsVoice;
+
+      const anyEnglish = voices.findIndex(v =>
+        v.lang && v.lang.toLowerCase().startsWith('en')
+      );
+      if (anyEnglish >= 0) return anyEnglish;
+
+      return 0;
+    }
+
+    function findFavoriteIndex(voices, favorite) {
+      if (!favorite) return -1;
+      return voices.findIndex(v =>
+        v.name === favorite.name && v.lang === favorite.lang
+      );
+    }
+
     function populateVoices() {
-      voices = synth.getVoices().sort((a, b) => a.name.localeCompare(b.name));
+      voices = synth.getVoices();
+      voices.sort((a, b) => a.name.localeCompare(b.name));
+
       voiceSelect.innerHTML = '';
 
       if (!voices.length) {
@@ -252,37 +371,48 @@
         option.value = '';
         option.textContent = 'No voices available yet';
         voiceSelect.appendChild(option);
+        setStatus('No voices loaded yet. Wait a moment and try again.');
         return;
       }
 
       voices.forEach((voice, index) => {
         const option = document.createElement('option');
-        option.value = index;
+        option.value = String(index);
         option.textContent = `${voice.name} (${voice.lang})${voice.default ? ' — default' : ''}`;
+        option.dataset.name = voice.name;
+        option.dataset.lang = voice.lang;
         voiceSelect.appendChild(option);
       });
 
-      const googleUsEnglish = voices.findIndex(
-        v => v.name === 'Google US English'
-      );
-      
-      const enUsVoice = voices.findIndex(
-        v => v.lang && v.lang.toLowerCase() === 'en-us'
-      );
-      
-      const englishVoice = voices.findIndex(
-        v => v.lang && v.lang.toLowerCase().startsWith('en')
-      );
-      
-      if (googleUsEnglish >= 0) {
-        voiceSelect.selectedIndex = googleUsEnglish;
-      } else if (enUsVoice >= 0) {
-        voiceSelect.selectedIndex = enUsVoice;
-      } else if (englishVoice >= 0) {
-        voiceSelect.selectedIndex = englishVoice;
-      } else {
-        voiceSelect.selectedIndex = 0;
+      // Prefer saved favorite if present in this browser
+      let selectedIndex = findFavoriteIndex(voices, favoriteVoice);
+      let usingFavorite = selectedIndex >= 0;
+
+      if (!usingFavorite) {
+        selectedIndex = chooseAutoVoiceIndex(voices);
       }
+
+      voiceSelect.selectedIndex = selectedIndex;
+      const selectedVoice = voices[selectedIndex];
+
+      setStatus(
+        usingFavorite
+          ? `Ready. Using favorite voice: ${selectedVoice.name} (${selectedVoice.lang})`
+          : `Ready. Selected voice: ${selectedVoice.name} (${selectedVoice.lang})`
+      );
+    }
+
+    function getSelectedVoice() {
+      const selectedOption = voiceSelect.selectedOptions[0];
+      if (!selectedOption) return null;
+
+      const idx = Number(selectedOption.value);
+      const v = voices[idx];
+      if (v) return v;
+
+      const name = selectedOption.dataset.name;
+      const lang = selectedOption.dataset.lang;
+      return voices.find(voice => voice.name === name && voice.lang === lang) || null;
     }
 
     function speakWord(word) {
@@ -294,22 +424,44 @@
         return;
       }
 
+      if (!voices.length) {
+        populateVoices();
+      }
+
       synth.cancel();
 
       const utterance = new SpeechSynthesisUtterance(cleanWord);
-      utterance.lang = 'en-US';
-      const selectedVoice = voices[Number(voiceSelect.value)];
 
+      const selectedVoice = getSelectedVoice();
       if (selectedVoice) {
         utterance.voice = selectedVoice;
+        utterance.lang = selectedVoice.lang || 'en-US';
+      } else {
+        utterance.lang = 'en-US';
       }
 
       utterance.rate = 0.9;
       utterance.pitch = 1;
 
-      utterance.onstart = () => setStatus(`Speaking: ${cleanWord}`);
-      utterance.onend = () => setStatus(`Finished: ${cleanWord}`);
-      utterance.onerror = () => setStatus('Sorry, the browser could not speak that word.');
+      utterance.onstart = () => {
+        if (selectedVoice) {
+          setStatus(`Speaking: ${cleanWord}\nVoice: ${selectedVoice.name} (${selectedVoice.lang})`);
+        } else {
+          setStatus(`Speaking: ${cleanWord}`);
+        }
+      };
+
+      utterance.onend = () => {
+        if (selectedVoice) {
+          setStatus(`Finished: ${cleanWord}\nVoice used: ${selectedVoice.name} (${selectedVoice.lang})`);
+        } else {
+          setStatus(`Finished: ${cleanWord}`);
+        }
+      };
+
+      utterance.onerror = (event) => {
+        setStatus(`Sorry, the browser could not speak that word.\nError: ${event.error || 'unknown'}`);
+      };
 
       lastWord = cleanWord;
       synth.speak(utterance);
@@ -329,10 +481,32 @@
       }
     });
 
+    voiceSelect.addEventListener('change', () => {
+      const selectedVoice = getSelectedVoice();
+      if (selectedVoice) {
+        setStatus(`Voice changed to: ${selectedVoice.name} (${selectedVoice.lang})`);
+      }
+    });
+
+    saveFavoriteBtn.addEventListener('click', () => {
+      const currentVoice = getSelectedVoice();
+      if (!currentVoice) {
+        setStatus('Select a voice first, then save it as favorite.');
+        return;
+      }
+      try {
+        saveFavorite(currentVoice);
+      } catch (e) {
+        console.warn('Failed to save favorite voice', e);
+        setStatus('Could not save favorite (storage not available?).');
+      }
+    });
+
+    loadFavorite();
     populateVoices();
 
-    if (speechSynthesis.onvoiceschanged !== undefined) {
-      speechSynthesis.onvoiceschanged = populateVoices;
+    if (typeof synth !== 'undefined' && synth.onvoiceschanged !== undefined) {
+      synth.onvoiceschanged = populateVoices;
     }
   </script>
 </body>
