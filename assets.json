@@ -34,5 +34,17 @@
     "emoji": "🔊",
     "href": "tools/word-reader/index.html",
     "section": "Popular"
+  },
+  {
+    "id": "code-snippets",
+    "title": "Code Snippets",
+    "category": "Code",
+    "tags": ["Python", "SQL"],
+    "description": "Get the code snippets form hear",
+    "meta": "Code • Snippets",
+    "pill": "Code",
+    "emoji": "👨‍💻",
+    "href": "tools/code-snippets/index.html",
+    "section": "Popular"
   }
 ]
