@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Code Snipets</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    body { margin:0; font-family:'Inter',sans-serif; background:#f4f4f6; color:#23242a; }
+    .hero{padding:3rem 1rem 2rem;text-align:center;border-bottom:1px solid #e0e0eb;background:#ffffff}
+    .title{font-size:2.4rem;font-weight:800;letter-spacing:-.03em;margin:0 0 1rem}
+    .search-wrap{max-width:520px;margin:0 auto}
+    input[type="search"]{width:100%;height:52px;border-radius:0.75rem;border:1px solid #dcdce4;padding:0 1rem;font-size:1rem}
+    .layout{max-width:1200px;margin:0 auto;padding:2rem 1rem 3rem;display:grid;grid-template-columns:260px 1fr;gap:1.5rem}
+    .sidebar,.main{background:#ffffff;border-radius:1rem;border:1px solid #dcdce4;padding:1.5rem}
+    .muted{font-size:.9rem;color:#6c6f7d}
+    .category-list{margin-top:1.25rem;display:grid;gap:.5rem;font-size:.95rem}
+    .check-row{display:flex;align-items:center;gap:.5rem}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;margin-top:1.25rem}
+    .card{border-radius:1rem;border:1px solid #dcdce4;padding:1rem;display:flex;flex-direction:column;gap:.75rem;background:#fff}
+    .card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem}
+    .card-title{margin:0;font-size:1rem;font-weight:600}
+    .chip{font-size:.8rem;padding:.25rem .5rem;border-radius:999px;background:#f0f1f5;color:#6c6f7d}
+    .file-ref{font-family:'JetBrains Mono',monospace;font-size:.8rem;padding:.3rem .5rem;border-radius:.5rem;background:#f8f8fb;border:1px dashed #dcdce4;color:#6c6f7d}
+    .preview{font-family:'JetBrains Mono',monospace;font-size:.84rem;background:#f8f8fb;border-radius:.75rem;border:1px solid #e0e0eb;padding:.75rem;min-height:130px;max-height:170px;overflow:auto;white-space:pre-wrap}
+    .tags{display:flex;flex-wrap:wrap;gap:.35rem;font-size:.78rem;margin-top:.25rem}
+    .tag{padding:.2rem .45rem;border-radius:999px;background:#e8f2fd;color:#2e93e6}
+    .card-actions{display:flex;gap:.5rem;margin-top:.5rem}
+    .btn{flex:1 1 auto;min-height:40px;border-radius:.75rem;border:0;font-weight:600;font-size:.9rem;cursor:pointer}
+    .btn-primary{background:#2e93e6;color:#fff}
+    .icon-btn{width:44px;min-height:40px;border-radius:.75rem;border:1px solid #dcdce4;background:#f8f8fb;font-size:1.1rem;cursor:pointer}
+    .empty{margin-top:1.5rem;padding:2rem;text-align:center;border-radius:1rem;border:1px dashed #dcdce4;background:#f8f8fb;color:#6c6f7d;font-size:.95rem}
+    @media(max-width:880px){.layout{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <h1 class="title">🤖 Code Snipets</h1>
+    <div class="search-wrap">
+      <input id="searchInput" type="search" placeholder="Search by title, tags, text, or file name..." />
+    </div>
+  </header>
+  <main class="layout">
+    <aside class="sidebar">
+      <h2 style="margin:0 0 .25rem;font-size:1rem;">Categories</h2>
+      <div class="muted">Filter snippets</div>
+      <div id="categoryList" class="category-list"></div>
+    </aside>
+    <section class="main">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:.75rem;flex-wrap:wrap;">
+        <div>
+          <h2 id="resultsLabel" style="margin:0 0 .15rem;font-size:1rem;">Showing 0 snippets</h2>
+          <div class="muted">Your reusable code library</div>
+        </div>
+      </div>
+      <div id="snippetGrid" class="grid"></div>
+    </section>
+  </main>
+  <script>
+    async function loadConfig() {
+      const res = await fetch('snippets/snippets.json');
+      if (!res.ok) throw new Error('Cannot load snippets.json');
+      return res.json();
+    }
+    async function loadSnippet(entry) {
+      try {
+        const res = await fetch(entry.file);
+        if (!res.ok) throw new Error('missing');
+        const code = await res.text();
+        return { ...entry, code };
+      } catch {
+        return { ...entry, code: `File not found yet: ${entry.file}
+
+Create this file in the repo.`, missing: true };
+      }
+    }
+    const state = { items: [], categories: [], selectedCats: new Set() };
+    const els = {
+      grid: document.getElementById('snippetGrid'),
+      cats: document.getElementById('categoryList'),
+      search: document.getElementById('searchInput'),
+      label: document.getElementById('resultsLabel'),
+    };
+    const esc = t => String(t || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+
+    function computeCategories() {
+      state.categories = [...new Set(state.items.map(i => i.category).filter(Boolean))].sort();
+    }
+
+    function renderCategories() {
+      if (!state.categories.length) {
+        els.cats.innerHTML = '<div class="muted">No categories</div>';
+        return;
+      }
+      els.cats.innerHTML = state.categories.map(c => `
+        <label class="check-row">
+          <input type="checkbox" value="${esc(c)}" ${state.selectedCats.has(c) ? 'checked' : ''} />
+          <span>${esc(c)}</span>
+        </label>
+      `).join('');
+      els.cats.querySelectorAll('input').forEach(input => {
+        input.addEventListener('change', () => {
+          const val = input.value;
+          if (input.checked) state.selectedCats.add(val); else state.selectedCats.delete(val);
+          renderGrid();
+        });
+      });
+    }
+
+    function filteredItems() {
+      const q = els.search.value.trim().toLowerCase();
+      return state.items.filter(item => {
+        const catOk = state.selectedCats.size === 0 || state.selectedCats.has(item.category);
+        const hay = [item.title, item.category, item.description, item.file, item.code, ...(item.tags||[])].join(' ').toLowerCase();
+        const textOk = !q || hay.includes(q);
+        return catOk && textOk;
+      });
+    }
+
+    function renderGrid() {
+      const items = filteredItems();
+      els.label.textContent = `Showing ${items.length} snippet${items.length === 1 ? '' : 's'}`;
+      if (!items.length) {
+        els.grid.innerHTML = '<div class="empty"><strong>No snippets found.</strong><br/>Try another search or add more snippet files in GitHub.</div>';
+        return;
+      }
+      els.grid.innerHTML = items.map(item => `
+        <article class="card">
+          <div class="card-head">
+            <h3 class="card-title">${esc(item.title)}</h3>
+            <span class="chip">${esc(item.category)}</span>
+          </div>
+          <div class="file-ref">${esc(item.file)}</div>
+          <div class="preview">${esc(item.description || '')}
+
+${esc(item.code || '')}</div>
+          <div class="tags">${(item.tags || []).map(t => `<span class="tag">${esc(t)}</span>`).join('')}</div>
+          <div class="card-actions">
+            <button class="btn btn-primary" data-copy="${item.id}">Copy Code</button>
+            <button class="icon-btn" data-path="${item.id}" title="Show file path">↗</button>
+          </div>
+        </article>
+      `).join('');
+      els.grid.querySelectorAll('[data-copy]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const item = state.items.find(i => i.id === btn.dataset.copy);
+          if (!item) return;
+          await navigator.clipboard.writeText(item.code || '');
+          const old = btn.textContent; btn.textContent = 'Copied';
+          setTimeout(() => btn.textContent = old, 1200);
+        });
+      });
+      els.grid.querySelectorAll('[data-path]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const item = state.items.find(i => i.id === btn.dataset.path);
+          if (!item) return;
+          alert(`File in repo:
+${item.file}`);
+        });
+      });
+    }
+
+    async function init() {
+      try {
+        const config = await loadConfig();
+        const loaded = await Promise.all(config.map(loadSnippet));
+        state.items = loaded;
+        computeCategories();
+        renderCategories();
+        renderGrid();
+      } catch (err) {
+        els.label.textContent = 'Error loading snippets';
+        els.grid.innerHTML = `<div class="empty">${esc(err.message)}</div>`;
+      }
+    }
+
+    els.search.addEventListener('input', renderGrid);
+    init();
+  </script>
+</body>
+</html>
