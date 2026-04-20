@@ -5,15 +5,15 @@
     "category": "Python",
     "tags": ["venv", "pip", "setup"],
     "description": "Common commands for creating and activating a Python virtual environment.",
-    "file": "assets/snippets/python_virtual_env.txt"
+    "file": "python_virtual_env.txt"
   },
   {
-    "id": "sql-cheat-sheet",
+    "id": "sql-cheet-sheet",
     "title": "SQL cheet sheet",
     "category": "SQL",
     "tags": ["select", "join", "group by"],
     "description": "Handy SQL examples and quick query patterns.",
-    "file": "assets/snippets/sql_cheet_sheet.txt"
+    "file": "sql_cheet_sheet.txt"
   },
   {
     "id": "pandas-cheet-sheet",
@@ -21,6 +21,6 @@
     "category": "Pandas",
     "tags": ["dataframe", "csv", "filter"],
     "description": "Useful pandas commands for daily work.",
-    "file": "assets/snippets/pandas_cheet_sheet.txt"
+    "file": "pandas_cheet_sheet.txt"
   }
 ]
