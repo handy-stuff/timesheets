@@ -1,0 +1,116 @@
+[
+  {
+    "id": "timesheet-calculator",
+    "title": "Timesheet Calculator",
+    "category": "Work",
+    "tags": ["time", "hours", "work"],
+    "description": "Track work hours, calculate totals, and export your week in one place.",
+    "meta": "Work • Time tracking",
+    "pill": "Work",
+    "emoji": "⏱️",
+    "href": "tools/timesheet-calculator/index.html",
+    "section": "Popular"
+  },
+  {
+    "id": "money-calculator",
+    "title": "Money Calculator",
+    "category": "Money",
+    "tags": ["cash", "tips", "drawer"],
+    "description": "Count notes, coins, and rolls — totals update instantly as you type.",
+    "meta": "Money • Cash counting",
+    "pill": "Money",
+    "emoji": "💰",
+    "href": "tools/money-calculator/index.html",
+    "section": "Popular"
+  },
+  {
+    "id": "word-reader",
+    "title": "Word Reader",
+    "category": "Language",
+    "tags": ["audio", "pronunciation"],
+    "description": "Type a word and hear it spoken aloud with your chosen browser voice.",
+    "meta": "Language • Pronunciation helper",
+    "pill": "Language",
+    "emoji": "🔊",
+    "href": "tools/word-reader/index.html",
+    "section": "Popular"
+  },
+
+  {
+    "id": "timesheet-calculator-work",
+    "title": "Timesheet Calculator",
+    "category": "Work",
+    "tags": ["time", "hours", "work"],
+    "description": "Add days, enter hours, and see your total time at a glance.",
+    "meta": "Ready now",
+    "pill": "Hours",
+    "emoji": "⏱️",
+    "href": "tools/timesheet-calculator/index.html",
+    "section": "Work"
+  },
+  {
+    "id": "task-checklist",
+    "title": "Task Checklist",
+    "category": "Work",
+    "tags": ["tasks", "checklist"],
+    "description": "Lightweight checklist for daily tasks and focus — coming soon.",
+    "meta": "Planned",
+    "pill": "Coming soon",
+    "emoji": "📋",
+    "disabled": true,
+    "href": "",
+    "section": "Work"
+  },
+
+  {
+    "id": "money-calculator-money",
+    "title": "Money Calculator",
+    "category": "Money",
+    "tags": ["cash", "tips", "drawer"],
+    "description": "Perfect for cash drawers, tips, or quick deposits.",
+    "meta": "Ready now",
+    "pill": "Cash",
+    "emoji": "💰",
+    "href": "tools/money-calculator/index.html",
+    "section": "Money"
+  },
+  {
+    "id": "tip-split",
+    "title": "Tip & Split",
+    "category": "Money",
+    "tags": ["tip", "split"],
+    "description": "Calculate tips and split bills with friends — coming soon.",
+    "meta": "Planned",
+    "pill": "Coming soon",
+    "emoji": "🧮",
+    "disabled": true,
+    "href": "",
+    "section": "Money"
+  },
+
+  {
+    "id": "word-reader-language",
+    "title": "Word Reader",
+    "category": "Language",
+    "tags": ["audio", "pronunciation"],
+    "description": "Hear a word out loud while you’re reading or learning.",
+    "meta": "Ready now",
+    "pill": "Voice",
+    "emoji": "🔊",
+    "href": "tools/word-reader/index.html",
+    "section": "Language"
+  },
+  {
+    "id": "word-flashcards",
+    "title": "Word Flashcards",
+    "category": "Language",
+    "tags": ["flashcards", "vocab"],
+    "description": "Simple word + meaning practice with audio — coming soon.",
+    "meta": "Planned",
+    "pill": "Coming soon",
+    "emoji": "📚",
+    "disabled": true,
+    "href": "",
+    "section": "Language"
+  }
+]
