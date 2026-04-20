@@ -262,8 +262,27 @@
         voiceSelect.appendChild(option);
       });
 
-      const englishVoice = voices.findIndex(v => v.lang.toLowerCase().startsWith('en'));
-      voiceSelect.selectedIndex = englishVoice >= 0 ? englishVoice : 0;
+      const googleUsEnglish = voices.findIndex(
+        v => v.name === 'Google US English'
+      );
+      
+      const enUsVoice = voices.findIndex(
+        v => v.lang && v.lang.toLowerCase() === 'en-us'
+      );
+      
+      const englishVoice = voices.findIndex(
+        v => v.lang && v.lang.toLowerCase().startsWith('en')
+      );
+      
+      if (googleUsEnglish >= 0) {
+        voiceSelect.selectedIndex = googleUsEnglish;
+      } else if (enUsVoice >= 0) {
+        voiceSelect.selectedIndex = enUsVoice;
+      } else if (englishVoice >= 0) {
+        voiceSelect.selectedIndex = englishVoice;
+      } else {
+        voiceSelect.selectedIndex = 0;
+      }
     }
 
     function speakWord(word) {
@@ -278,6 +297,7 @@
       synth.cancel();
 
       const utterance = new SpeechSynthesisUtterance(cleanWord);
+      utterance.lang = 'en-US';
       const selectedVoice = voices[Number(voiceSelect.value)];
 
       if (selectedVoice) {
